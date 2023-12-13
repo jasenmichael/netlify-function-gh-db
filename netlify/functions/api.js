@@ -1,6 +1,7 @@
 // netlify/functions/api.js
 
 require('dotenv').config({ path: '../../.env' })
+const { encryptString, decryptString } = require('../../src/encryption.js');
 
 const express = require('express')
 const axios = require('axios')
@@ -20,15 +21,18 @@ app.get('/api', async (req, res) => {
 app.get('/api/:filePath', async (req, res) => {
   try {
     const filePath = req.params.filePath
-    const fullApiUrl = `${apiUrl}/data/${filePath}.json`
+    const fullApiUrl = `${apiUrl}data/${filePath}`
+    console.log('fullApiUrl', fullApiUrl);
 
     const response = await axios.get(fullApiUrl)
-    const content = Buffer.from(response.data.content, 'base64').toString(
+    // const content = Buffer.from(response.data.content, 'base64').toString(
+    //   'utf-8'
+    // )
+    const content = decryptString(Buffer.from(response.data.content, 'base64').toString(
       'utf-8'
-    )
+    ))
 
     res.status(200).json(JSON.parse(content))
-    // res.status(200).json({ fullApiUrl })
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' })
   }
@@ -37,7 +41,7 @@ app.get('/api/:filePath', async (req, res) => {
 app.put('/api/:filePath', express.json(), async (req, res) => {
   try {
     const filePath = req.params.filePath
-    const fullApiUrl = `${apiUrl}/data/${filePath}.json`
+    const fullApiUrl = `${apiUrl}data/${filePath}`
 
     const newContent = req.body
 
@@ -54,7 +58,8 @@ app.put('/api/:filePath', express.json(), async (req, res) => {
       fullApiUrl,
       {
         message: 'Update file',
-        content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'),
+        // content: Buffer.from(JSON.stringify(newContent, null, 2)).toString('base64'),
+        content: Buffer.from(encryptString(JSON.stringify(newContent, null, 2))).toString('base64'),
         committer: { name: 'jasenmichael', email: 'jasen@jasenmichael.com' },
         sha: latestSha
       },
