@@ -1,2 +1,8 @@
 [build]
   environment = { GITHUB_ACCESS_TOKEN = "your-github-token" }
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
