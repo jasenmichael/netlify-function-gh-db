@@ -1,0 +1,2 @@
+[build]
+  environment = { GITHUB_ACCESS_TOKEN = "your-github-token" }
